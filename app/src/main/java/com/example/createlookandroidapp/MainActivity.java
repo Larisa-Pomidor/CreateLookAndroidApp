@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -17,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     RecyclerView clothesView;
     LinearLayoutManager linearLayoutManager;
     ClothesAdapter clothesAdapter;
+
     int[] clothesImages = {R.drawable.look_1, R.drawable.look_2, R.drawable.look_3, R.drawable.look_4,
             R.drawable.look_5, R.drawable.look_6, R.drawable.look_7, R.drawable.look_8, R.drawable.look_9};
 
@@ -56,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             return insets;
         });
 
+        //ConstraintLayout mainLayout = findViewById(R.id.main);
+        FrameLayout imageContainer = findViewById(R.id.image_container);
+
         categoryView = findViewById(R.id.category_list);
         categoryView.setOnItemClickListener(this);
         initCategories();
@@ -65,9 +71,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         categoryView.setAdapter(arrayAdapter);
 
         clothesView = findViewById(R.id.clothes_list);
+
         linearLayoutManager = new LinearLayoutManager(MainActivity.this,
                 LinearLayoutManager.HORIZONTAL, false);
-        clothesAdapter = new ClothesAdapter(clothesImages);
+        clothesAdapter = new ClothesAdapter(clothesImages, imageContainer);
 
         clothesView.setLayoutManager(linearLayoutManager);
         clothesView.setAdapter(clothesAdapter);
@@ -76,8 +83,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> l, View v, int position, long id) {
         Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
 
-        clothesAdapter = new ClothesAdapter(clothesImages2);
-        clothesView.setAdapter(clothesAdapter);
+        //clothesAdapter = new ClothesAdapter(clothesImages2);
+        //clothesView.setAdapter(clothesAdapter);
     }
 
     private void initCategories() {

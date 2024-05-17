@@ -1,18 +1,24 @@
 package com.example.createlookandroidapp;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class ClothesAdapter extends RecyclerView.Adapter<ClothesAdapter.MyViewHolder> {
     int[] data;
-    public ClothesAdapter(int[] data) {
+    //ConstraintLayout mainLayout;
+    FrameLayout imageContainer;
+
+    public ClothesAdapter(int[] data, FrameLayout imageContainer) {
         this.data = data;
+        this.imageContainer = imageContainer;
     }
 
     @NonNull
@@ -33,14 +39,32 @@ public class ClothesAdapter extends RecyclerView.Adapter<ClothesAdapter.MyViewHo
         return data.length;
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    class MyViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
 
         ImageView imageView;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            Log.i("done","Done");
+            itemView.setOnClickListener(this);
             imageView = itemView.findViewById(R.id.clothes_image);
-            Log.i("done",imageView.toString());
+        }
+
+        @Override
+        public void onClick(View view) {
+            Toast.makeText(view.getContext(),
+                    "position = " + getLayoutPosition(), Toast.LENGTH_SHORT).show();
+
+            DraggableResizableImageView newImageView = new DraggableResizableImageView(view.getContext());
+
+            newImageView.setImageResource(data[getLayoutPosition()]);
+
+            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            newImageView.setLayoutParams(layoutParams);
+
+            imageContainer.addView(newImageView);
         }
     }
 }
