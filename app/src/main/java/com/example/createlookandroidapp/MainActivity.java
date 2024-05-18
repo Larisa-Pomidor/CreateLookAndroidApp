@@ -59,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             return insets;
         });
 
-        //ConstraintLayout mainLayout = findViewById(R.id.main);
         FrameLayout imageContainer = findViewById(R.id.image_container);
 
         categoryView = findViewById(R.id.category_list);
@@ -82,9 +81,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void onItemClick(AdapterView<?> l, View v, int position, long id) {
         Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
-
-        //clothesAdapter = new ClothesAdapter(clothesImages2);
-        //clothesView.setAdapter(clothesAdapter);
     }
 
     private void initCategories() {

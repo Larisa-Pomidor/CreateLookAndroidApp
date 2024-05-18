@@ -1,15 +1,15 @@
 package com.example.createlookandroidapp;
 
+import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Rect;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class DraggableResizableImageView extends androidx.appcompat.widget.AppCompatImageView implements View.OnTouchListener {
+public class DraggableResizableImageView extends androidx.appcompat.widget.AppCompatImageView {
 
     private float downX, downY;
     private float dX, dY;
@@ -18,7 +18,9 @@ public class DraggableResizableImageView extends androidx.appcompat.widget.AppCo
     private static final int DRAG = 1;
     private static final int ZOOM = 2;
     private int mode = NONE;
-    private Rect rect = new Rect();
+    private boolean isLongClick;
+    private Handler handler;
+    private Runnable longClickRunnable;
 
     public DraggableResizableImageView(@NonNull Context context) {
         super(context);
@@ -36,46 +38,66 @@ public class DraggableResizableImageView extends androidx.appcompat.widget.AppCo
     }
 
     private void init() {
-        setOnTouchListener(this);
+        setLongClickable(true);
+        handler = new Handler();
+        longClickRunnable = () -> {
+            isLongClick = true;
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Warning")
+                    .setMessage("Do you want to delete this item?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        ((FrameLayout) getParent()).removeView(DraggableResizableImageView.this);
+                    })
+                    .setNegativeButton("No", null)
+                    .show();
+        };
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 downX = event.getRawX();
                 downY = event.getRawY();
-                dX = v.getX() - downX;
-                dY = v.getY() - downY;
-                originalWidth = v.getWidth();
-                originalHeight = v.getHeight();
-                rect.set(v.getLeft(), v.getTop(), v.getRight(), v.getBottom());
+                dX = getX() - downX;
+                dY = getY() - downY;
+                originalWidth = getWidth();
+                originalHeight = getHeight();
                 mode = DRAG;
-                break;
+                isLongClick = false;
+                handler.postDelayed(longClickRunnable, 500); // 500ms for long click
+                return true;
             case MotionEvent.ACTION_POINTER_DOWN:
                 mode = ZOOM;
-                break;
+                handler.removeCallbacks(longClickRunnable);
+                return true;
             case MotionEvent.ACTION_MOVE:
+                if (isLongClick) {
+                    return true;
+                }
                 if (mode == DRAG) {
-                    v.animate()
+                    handler.removeCallbacks(longClickRunnable);
+                    animate()
                             .x(event.getRawX() + dX)
                             .y(event.getRawY() + dY)
                             .setDuration(0)
                             .start();
                 } else if (mode == ZOOM) {
-                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) v.getLayoutParams();
+                    handler.removeCallbacks(longClickRunnable);
+                    FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
                     int newWidth = (int) (originalWidth + (event.getRawX() - downX));
                     int newHeight = (int) (originalHeight + (event.getRawY() - downY));
                     layoutParams.width = newWidth;
                     layoutParams.height = newHeight;
-                    v.setLayoutParams(layoutParams);
+                    setLayoutParams(layoutParams);
                 }
-                break;
+                return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
+                handler.removeCallbacks(longClickRunnable);
                 mode = NONE;
-                break;
+                return true;
         }
-        return true;
+        return super.onTouchEvent(event);
     }
 }
