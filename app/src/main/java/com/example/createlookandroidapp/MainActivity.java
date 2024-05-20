@@ -1,11 +1,8 @@
 package com.example.createlookandroidapp;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -14,31 +11,32 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.navigation.NavigationView;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import db.Category;
+import db.CategoryClothesViewModel;
+import db.Clothes;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    List<String> categoryList;
     ListView categoryView;
     RecyclerView clothesView;
     LinearLayoutManager linearLayoutManager;
     ClothesAdapter clothesAdapter;
+    CategoryClothesViewModel categoryClothesViewModel;
 
+    List<Category> categoryObjectList;
+    List<String> categoryList;
+    ArrayAdapter<String> arrayAdapter;
     int[] clothesImages = {R.drawable.look_1, R.drawable.look_2, R.drawable.look_3, R.drawable.look_4,
             R.drawable.look_5, R.drawable.look_6, R.drawable.look_7, R.drawable.look_8, R.drawable.look_9};
 
@@ -46,7 +44,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     int[] background = {R.drawable.background_1, R.drawable.background_2, R.drawable.background_3};
     int currentBackgroundIndex = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,17 +56,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             return insets;
         });
 
-        FrameLayout imageContainer = findViewById(R.id.image_container);
+        categoryClothesViewModel = new ViewModelProvider(this).get(CategoryClothesViewModel.class);
 
-        categoryView = findViewById(R.id.category_list);
-        categoryView.setOnItemClickListener(this);
-        initCategories();
+        categoryClothesViewModel.getAllCategories().observe(this, categories -> {
+            arrayAdapter = new ArrayAdapter<String>(this,
+                    R.layout.activity_category_item_detail, R.id.category_text_view,
+                    categories.stream().map(Category::getName).collect(Collectors.toList()));
+            categoryView = findViewById(R.id.category_list);
+            categoryView.setOnItemClickListener(this);
+            categoryView.setAdapter(arrayAdapter);
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,
-                R.layout.activity_category_item_detail, R.id.category_text_view, categoryList);
-        categoryView.setAdapter(arrayAdapter);
+        });
+
+        categoryClothesViewModel.getClothesByCategory(1)
+                .observe(this, clothes -> {
+            for (Clothes c: clothes) {
+                Log.d("Course", c.url);
+            }
+        });
 
         clothesView = findViewById(R.id.clothes_list);
+
+        FrameLayout imageContainer = findViewById(R.id.image_container);
 
         linearLayoutManager = new LinearLayoutManager(MainActivity.this,
                 LinearLayoutManager.HORIZONTAL, false);
@@ -81,14 +89,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void onItemClick(AdapterView<?> l, View v, int position, long id) {
         Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
-    }
 
-    private void initCategories() {
-        categoryList = new ArrayList<>();
-        categoryList.add("Shoes");
-        categoryList.add("Accessories");
-        categoryList.add("Dresses");
-        categoryList.add("Pants");
     }
 
     public void toggleCategories(View v) {

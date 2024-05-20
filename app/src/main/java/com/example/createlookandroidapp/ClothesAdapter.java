@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ClothesAdapter extends RecyclerView.Adapter<ClothesAdapter.MyViewHolder> {
     int[] data;
-    //ConstraintLayout mainLayout;
     FrameLayout imageContainer;
 
     public ClothesAdapter(int[] data, FrameLayout imageContainer) {
