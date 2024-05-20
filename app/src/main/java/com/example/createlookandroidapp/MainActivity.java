@@ -65,31 +65,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             categoryView = findViewById(R.id.category_list);
             categoryView.setOnItemClickListener(this);
             categoryView.setAdapter(arrayAdapter);
-
         });
-
-        categoryClothesViewModel.getClothesByCategory(1)
-                .observe(this, clothes -> {
-            for (Clothes c: clothes) {
-                Log.d("Course", c.url);
-            }
-        });
-
-        clothesView = findViewById(R.id.clothes_list);
-
-        FrameLayout imageContainer = findViewById(R.id.image_container);
-
-        linearLayoutManager = new LinearLayoutManager(MainActivity.this,
-                LinearLayoutManager.HORIZONTAL, false);
-        clothesAdapter = new ClothesAdapter(clothesImages, imageContainer);
-
-        clothesView.setLayoutManager(linearLayoutManager);
-        clothesView.setAdapter(clothesAdapter);
     }
 
     public void onItemClick(AdapterView<?> l, View v, int position, long id) {
-        Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
 
+        categoryClothesViewModel.getClothesByCategory(position + 1)
+                .observe(this, clothes -> {
+                    clothesView = findViewById(R.id.clothes_list);
+
+                    FrameLayout imageContainer = findViewById(R.id.image_container);
+
+                    linearLayoutManager = new LinearLayoutManager(MainActivity.this,
+                            LinearLayoutManager.HORIZONTAL, false);
+
+                    int[] clothesImages = clothes.stream()
+                            .mapToInt(clothesItem -> getDrawableResourceId(clothesItem.url))
+                            .toArray();
+
+                    clothesAdapter = new ClothesAdapter(clothesImages, imageContainer);
+
+                    clothesView.setLayoutManager(linearLayoutManager);
+                    clothesView.setAdapter(clothesAdapter);
+                });
+    }
+
+    private int getDrawableResourceId(String drawableName) {
+        return getResources().getIdentifier(drawableName, "drawable", getPackageName());
     }
 
     public void toggleCategories(View v) {
